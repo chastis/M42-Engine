@@ -6,13 +6,15 @@ project "ImGui"
     objdir (OUTPUT_DIR .. "/%{prj.name}")
     kind "StaticLib"
 
-    files { "**.h", "**.cpp" }
+    files { "**.hpp", "**.cpp" }
 
     includedirs
     {
         INCLUDE_PATHS.ROOT,
         INCLUDE_PATHS.SFML
     }
+
+    links { "d3d11.lib" }
 
     defines { "SFML_STATIC", "IMGUI_DISABLE_OBSOLETE_FUNCTIONS" }
 

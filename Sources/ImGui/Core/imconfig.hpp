@@ -108,81 +108,75 @@ namespace ImGui
 }
 */
 
-
 // Add this to your imconfig.h
 
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Color.hpp>
 
-#include <ImGui/SFML/imgui-SFML_export.h>
+#include <ImGui/SFML/imgui-SFML_export.hpp>
 
 #include <array>
 
-#define IM_VEC2_CLASS_EXTRA                                             \
-    template <typename T>                                               \
-    constexpr ImVec2(const sf::Vector2<T>& v)                           \
-        : x(static_cast<float>(v.x))                                    \
-        , y(static_cast<float>(v.y))                                    \
-    {                                                                   \
-    }                                                                   \
-                                                                        \
-    template <class T>                                                  \
-    constexpr ImVec2(const std::array<T, 2>& arr)                       \
-        : x(static_cast<float>(arr[0]))                                 \
-        , y(static_cast<float>(arr[1]))                                 \
-    {                                                                   \
-    }                                                                   \
-                                                                        \
-    template <typename T>                                               \
-    constexpr operator sf::Vector2<T>() const                           \
-    {                                                                   \
-        return sf::Vector2<T>(x, y);                                    \
-    }                                                                   \
-                                                                        \
-    template <typename T>                                               \
-    constexpr operator std::array<T, 2>() const                         \
-    {                                                                   \
-        return {x, y};                                                  \
-    }                                                                   \
-                                                                        \
-    constexpr bool operator==(const ImVec2& rhs) const                  \
-    {                                                                   \
-        return x == rhs.x && y == rhs.y;                                \
-    }                                                                   \
-                                                                        \
-    constexpr bool operator!=(const ImVec2& rhs) const                  \
-    {                                                                   \
-        return x != rhs.x || y != rhs.y;                                \
+#define IM_VEC2_CLASS_EXTRA                                            \
+    template <typename T>                                              \
+    constexpr ImVec2(const sf::Vector2<T> &v)                          \
+        : x(static_cast<float>(v.x)), y(static_cast<float>(v.y))       \
+    {                                                                  \
+    }                                                                  \
+                                                                       \
+    template <class T>                                                 \
+    constexpr ImVec2(const std::array<T, 2> &arr)                      \
+        : x(static_cast<float>(arr[0])), y(static_cast<float>(arr[1])) \
+    {                                                                  \
+    }                                                                  \
+                                                                       \
+    template <typename T>                                              \
+    constexpr operator sf::Vector2<T>() const                          \
+    {                                                                  \
+        return sf::Vector2<T>(x, y);                                   \
+    }                                                                  \
+                                                                       \
+    template <typename T>                                              \
+    constexpr operator std::array<T, 2>() const                        \
+    {                                                                  \
+        return {x, y};                                                 \
+    }                                                                  \
+                                                                       \
+    constexpr bool operator==(const ImVec2 &rhs) const                 \
+    {                                                                  \
+        return x == rhs.x && y == rhs.y;                               \
+    }                                                                  \
+                                                                       \
+    constexpr bool operator!=(const ImVec2 &rhs) const                 \
+    {                                                                  \
+        return x != rhs.x || y != rhs.y;                               \
     }
 
-#define IM_VEC4_CLASS_EXTRA                                             \
-    template <class T>                                                  \
-    constexpr ImVec4(const std::array<T, 4>& arr)                       \
-        : x(static_cast<float>(arr[0]))                                 \
-        , y(static_cast<float>(arr[1]))                                 \
-        , z(static_cast<float>(arr[2]))                                 \
-        , w(static_cast<float>(arr[3]))                                 \
-    {                                                                   \
-    }                                                                   \
-                                                                        \
-    ImVec4(const sf::Color & c)                                         \
-        : x(c.r / 255.f), y(c.g / 255.f), z(c.b / 255.f), w(c.a / 255.f)\
-    {}                                                                  \
-                                                                        \
-    operator sf::Color() const {                                        \
-        return sf::Color(                                               \
-            static_cast<sf::Uint8>(x * 255.f),                          \
-            static_cast<sf::Uint8>(y * 255.f),                          \
-            static_cast<sf::Uint8>(z * 255.f),                          \
-            static_cast<sf::Uint8>(w * 255.f));                         \
-    }                                                                   \
-                                                                        \
-    template <typename T>                                               \
-    constexpr operator std::array<T, 4>() const                         \
-    {                                                                   \
-        return {x, y, z, w};                                            \
-    }                                                                   \
-
-#define ImTextureID unsigned int
+#define IM_VEC4_CLASS_EXTRA                                                                                                          \
+    template <class T>                                                                                                               \
+    constexpr ImVec4(const std::array<T, 4> &arr)                                                                                    \
+        : x(static_cast<float>(arr[0])), y(static_cast<float>(arr[1])), z(static_cast<float>(arr[2])), w(static_cast<float>(arr[3])) \
+    {                                                                                                                                \
+    }                                                                                                                                \
+                                                                                                                                     \
+    ImVec4(const sf::Color &c)                                                                                                       \
+        : x(c.r / 255.f), y(c.g / 255.f), z(c.b / 255.f), w(c.a / 255.f)                                                             \
+    {                                                                                                                                \
+    }                                                                                                                                \
+                                                                                                                                     \
+    operator sf::Color() const                                                                                                       \
+    {                                                                                                                                \
+        return sf::Color(                                                                                                            \
+            static_cast<sf::Uint8>(x * 255.f),                                                                                       \
+            static_cast<sf::Uint8>(y * 255.f),                                                                                       \
+            static_cast<sf::Uint8>(z * 255.f),                                                                                       \
+            static_cast<sf::Uint8>(w * 255.f));                                                                                      \
+    }                                                                                                                                \
+                                                                                                                                     \
+    template <typename T>                                                                                                            \
+    constexpr operator std::array<T, 4>() const                                                                                      \
+    {                                                                                                                                \
+        return {x, y, z, w};                                                                                                         \
+    }
 
 #define IMGUI_DEFINE_MATH_OPERATORS

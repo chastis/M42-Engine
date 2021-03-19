@@ -7,7 +7,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/Window/Joystick.hpp>
 
-#include "imgui-SFML_export.h"
+#include "imgui-SFML_export.hpp"
 
 namespace sf
 {

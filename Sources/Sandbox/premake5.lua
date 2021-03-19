@@ -35,7 +35,7 @@ project "Sandbox"
 
     defines { "SFML_STATIC", "IMGUI_DISABLE_OBSOLETE_FUNCTIONS" }
 
-    links { "ImGui" }
+    links { "ImGui" , "d3d11.lib" }
 
     filter "configurations:Debug"
         kind "ConsoleApp"
