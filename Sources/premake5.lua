@@ -36,4 +36,5 @@ workspace "M42-Engine"
         "{COPY} %{wks.location}/SFML/Sources/extlibs/bin/x64 " .. TARGET_DIR
     }
  
+    include "ImGui"
     include "Sandbox"
