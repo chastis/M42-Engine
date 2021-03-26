@@ -38,3 +38,4 @@ workspace "M42-Engine"
  
     include "ImGui"
     include "Sandbox"
+    include "Engine"
