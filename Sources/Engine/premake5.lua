@@ -1,4 +1,5 @@
 project "Engine"
+    kind "StaticLib"
     language "C++"
     cppdialect (CPPDIALECT)
     rtti (RTTI)
@@ -15,7 +16,6 @@ project "Engine"
     links { "ImGui" }
 
     filter "configurations:Debug"
-        kind "ConsoleApp"
         defines { "DEBUG" }
         symbols "On"
         runtime "Debug"
@@ -32,7 +32,6 @@ project "Engine"
         }
 
     filter "configurations:Release"
-        kind "ConsoleApp"
         defines { "NDEBUG", "RELEASE"}
         optimize "On"
         symbols "On"
@@ -51,7 +50,6 @@ project "Engine"
 
         
     filter "configurations:Retail"
-        kind "WindowedApp"
         defines { "NDEBUG", "RETAIL"}
         optimize "On"
         symbols "Off"
