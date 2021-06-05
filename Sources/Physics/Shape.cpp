@@ -1,6 +1,7 @@
 #include "Shape.hpp"
 #include "core.hpp"
 #include "cassert"
+#include <cmath>
 
 Circle::Circle(float r)
 {
@@ -20,9 +21,9 @@ void Circle::Initialize()
 void Circle::ComputeMass(float density)
 {
     body->m = Math::PI * radius * radius * density;
-    body->im = (body->m) ? 1.0f / body->m : 0.0f;
+    body->im = static_cast<bool>(body->m) ? 1.0f / body->m : 0.0f;
     body->I = body->m * radius * radius;
-    body->iI = (body->I) ? 1.0f / body->I : 0.0f;
+    body->iI = static_cast<bool>(body->I) ? 1.0f / body->I : 0.0f;
 }
 
 void Circle::SetOrient(float radians)
@@ -82,15 +83,13 @@ Shape* PolygonShape::Clone() const
 
 void PolygonShape::ComputeMass(float density)
 {
-    // Calculate centroid and moment of interia
-    Vec2 c(0.0f, 0.0f); // centroid
+    Vec2 centroid = { 0.0f, 0.0f };
     float area = 0.0f;
     float I = 0.0f;
     const float k_inv3 = 1.0f / 3.0f;
 
     for (uint32_t i1 = 0; i1 < m_vertexCount; ++i1)
     {
-        // Triangle vertices, third vertex implied as (0, 0)
         Vec2 p1(m_vertices[i1]);
         const uint32_t i2 = i1 + 1 < m_vertexCount ? i1 + 1 : 0;
         Vec2 p2(m_vertices[i2]);
@@ -100,21 +99,19 @@ void PolygonShape::ComputeMass(float density)
 
         area += triangleArea;
 
-        // Use area to weight the centroid average, not just vertex position
-        c += triangleArea * k_inv3 * (p1 + p2);
+        centroid += triangleArea * k_inv3 * (p1 + p2);
 
-        const float intx2 = p1.x * p1.x + p2.x * p1.x + p2.x * p2.x;
-        const float inty2 = p1.y * p1.y + p2.y * p1.y + p2.y * p2.y;
-        I += (0.25f * k_inv3 * D) * (intx2 + inty2);
+        const float intX2 = p1.x * p1.x + p2.x * p1.x + p2.x * p2.x;
+        const float intY2 = p1.y * p1.y + p2.y * p1.y + p2.y * p2.y;
+        I += (0.25f * k_inv3 * D) * (intX2 + intY2);
     }
 
-    c *= 1.0f / area;
+    centroid *= 1.0f / area;
 
-    // Translate vertices to centroid (make the centroid (0, 0)
-    // for the polygon in model space)
-    // Not floatly necessary, but I like doing this anyway
     for (uint32_t i = 0; i < m_vertexCount; ++i)
-        m_vertices[i] -= c;
+    {
+        m_vertices[i] -= centroid;
+    }
 
     body->m = density * area;
     body->im = static_cast<bool>(body->m) ? 1.0f / body->m : 0.0f;
@@ -144,7 +141,6 @@ Shape::Type PolygonShape::GetType() const
     return Shape::Type::Poly;
 }
 
-// Half width and half height
 void PolygonShape::SetBox(float hw, float hh)
 {
     m_vertexCount = 4;
@@ -160,12 +156,10 @@ void PolygonShape::SetBox(float hw, float hh)
 
 void PolygonShape::Set(Vec2* vertices, uint32_t count)
 {
-    // No hulls with less than 3 vertices (ensure actual polygon)
-    assert (count > 2 && count <= MaxPolyVertexCount);
+    assert(count > 2 && count <= MaxPolyVertexCount);
 
     count = std::min(count, MaxPolyVertexCount);
 
-    // Find the right most point on the hull
     int32_t rightMost = 0;
     float highestXCoord = vertices[0].x;
     for (uint32_t i = 1; i < count; ++i)
@@ -176,11 +170,10 @@ void PolygonShape::Set(Vec2* vertices, uint32_t count)
             highestXCoord = x;
             rightMost = i;
         }
-
-        // If matching x then take farthest negative y
-        else if (x == highestXCoord)
-            if (vertices[i].y < vertices[rightMost].y)
-                rightMost = i;
+        else if (x == highestXCoord && vertices[i].y < vertices[rightMost].y)
+        {
+            rightMost = i;
+        }
     }
 
     int32_t hull[MaxPolyVertexCount];
@@ -191,40 +184,32 @@ void PolygonShape::Set(Vec2* vertices, uint32_t count)
     {
         hull[outCount] = indexHull;
 
-        // Search for next index that wraps around the hull
-        // by computing cross products to find the most counter-clockwise
-        // vertex in the set, given the previos hull index
         int32_t nextHullIndex = 0;
         for (int32_t i = 1; i < static_cast<int32_t>(count); ++i)
         {
-            // Skip if same coordinate as we need three unique
-            // points in the set to perform a cross product
             if (nextHullIndex == indexHull)
             {
                 nextHullIndex = i;
                 continue;
             }
 
-            // Cross every set of three unique vertices
-            // Record each counter clockwise third vertex and add
-            // to the output hull
-            // See : http://www.oocities.org/pcgpe/math2d.html
-            Vec2 e1 = vertices[nextHullIndex] - vertices[hull[outCount]];
-            Vec2 e2 = vertices[i] - vertices[hull[outCount]];
-            float c = Cross(e1, e2);
-            if (c < 0.0f)
+            const Vec2 e1 = vertices[nextHullIndex] - vertices[hull[outCount]];
+            const Vec2 e2 = vertices[i] - vertices[hull[outCount]];
+            const float c = Cross(e1, e2);
+            if (c < 0.f)
+            {
                 nextHullIndex = i;
+            }
 
-            // Cross product is zero then e vectors are on same line
-            // therefor want to record vertex farthest along that line
-            if (c == 0.0f && e2.LenSqr() > e1.LenSqr())
+            if (Math::IsNearlyZero(c) && e2.LenSqr() > e1.LenSqr())
+            {
                 nextHullIndex = i;
+            }
         }
 
         ++outCount;
         indexHull = nextHullIndex;
 
-        // Conclude algorithm upon wrap-around
         if (nextHullIndex == rightMost)
         {
             m_vertexCount = outCount;
@@ -232,26 +217,23 @@ void PolygonShape::Set(Vec2* vertices, uint32_t count)
         }
     }
 
-    // Copy vertices into shape's vertices
     for (uint32_t i = 0; i < m_vertexCount; ++i)
+    {
         m_vertices[i] = vertices[hull[i]];
+    }
 
-    // Compute face normals
     for (uint32_t i1 = 0; i1 < m_vertexCount; ++i1)
     {
         uint32_t i2 = i1 + 1 < m_vertexCount ? i1 + 1 : 0;
-        Vec2 face = m_vertices[i2] - m_vertices[i1];
+        const Vec2 face = m_vertices[i2] - m_vertices[i1];
 
-        // Ensure no zero-length edges, because that's bad
         assert(face.LenSqr() > Math::EPSILON * Math::EPSILON);
 
-        // Calculate normal with 2D cross product between vector and scalar
-        m_normals[i1] = Vec2(face.y, -face.x);
+        m_normals[i1] = { face.y, -face.x };
         m_normals[i1].Normalize();
     }
 }
 
-// The extreme point along a direction within a polygon
 Vec2 PolygonShape::GetSupport(const Vec2& dir)
 {
     float bestProjection = -FLT_MAX;
