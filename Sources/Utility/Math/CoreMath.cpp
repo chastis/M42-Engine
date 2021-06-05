@@ -1,4 +1,4 @@
-#include "MathBase.h"
+#include "CoreMath.hpp"
 
 namespace Math
 {
